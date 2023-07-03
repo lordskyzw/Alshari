@@ -1,5 +1,3 @@
-GitHub Copilot: Sure, here's an example README file for the selected project:
-
 # Video Intercom System
 
 This is a simple Flask application that streams video from a camera connected to a Raspberry Pi. The video is streamed over HTTP using the multipart/x-mixed-replace content type.
