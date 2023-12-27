@@ -1,12 +1,15 @@
-Car approaches gate
-camera is working in real time picking up frames and checking for a number plate
-when a number plate is detected, OCR is performed and plate number is captured
+- Car approaches gate
+- camera is working in real time picking up frames
+- the camera only looks for a number plate when it detects a car
+- upon arrival of the car, the system searches for the number plate 3 times
+
+- when a number plate is detected, OCR is performed and plate number is captured
 
 
-lines 1-3 are crucial for the whole process, they have to be reliable
+NB: lines 1-6 are crucial for the whole process, they have to be reliable
 
-after number is captured, it is then queried against the db
-if the number is in the db, the gate is opened and an endpoint is hit notifying the car owner a welcome or exit message (this depends on the camera which picks up the image)
+- after number is captured, it is then queried against the db
+- if the number is in the db, the gate is opened and an endpoint is hit notifying the car owner a welcome or exit message (this depends on the camera which picks up the image)
 
 the gate is opened through a connection to the microcontroller
 the microcontroller is connected to a relay switch

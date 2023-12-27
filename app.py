@@ -2,7 +2,7 @@ from roboflow import Roboflow
 import cv2
 import pytesseract
 
-# Roboflow API Key and Model Endpoint
+
 api_key = "YOUR_PRIVATE_API_KEY"
 workspace_name = "YOUR_WORKSPACE"
 project_name = "YOUR_PROJECT"
