@@ -1,39 +1,50 @@
-# Video Intercom System
+# License Plate Recognition System with Roboflow and Tesseract
 
-This is a simple Flask application that streams video from a camera connected to a Raspberry Pi. The video is streamed over HTTP using the multipart/x-mixed-replace content type.
+This project implements a License Plate Recognition (LPR) system using Roboflow for object detection and Tesseract for Optical Character Recognition (OCR). The system is designed to run on a Raspberry Pi and is capable of detecting and extracting license plate numbers from video frames captured by a camera.
 
 ## Requirements
 
 - Python 3.x
-- Flask
 - OpenCV
+- pytesseract
+- Roboflow SDK
+- Tesseract OCR
 
-## Installation
+## Setup
 
-1. Clone the repository:
+1. Install the required Python packages:
 
-   ```
-   git clone https://github.com/username/flask-video-streaming.git
-   ```
+    ```bash
+    pip install opencv-python pytesseract roboflow
+    ```
 
-2. Install the required packages:
+2. Install Tesseract OCR. Follow the installation instructions for your operating system: [Tesseract OCR Installation Guide](https://github.com/tesseract-ocr/tesseract)
 
-   ```
-   pip install -r requirements.txt
-   ```
+3. Set up a Roboflow account and create a project with a trained YOLOv8 model for license plate detection.
 
-## Usage
+4. Replace the placeholders in the script with your Roboflow API key, workspace, project, and model version.
 
-1. Connect a camera to the Raspberry Pi.
+5. Run the script on your Raspberry Pi:
 
-2. Run the Flask application:
+    ```bash
+    python license_plate_recognition.py
+    ```
 
-   ```
-   python app.py
-   ```
+## Configuration
 
-3. Open a web browser and navigate to `http://<raspberry-pi-ip-address>:5000/video_feed`.
+- Adjust the camera index in the script if needed (`cap = cv2.VideoCapture(0)`).
+- Fine-tune motion detection parameters (`cv2.createBackgroundSubtractorMOG2()` and `cv2.countNonZero(fgmask)`).
+- Customize the number of detection attempts (`max_attempts`).
 
-   Note: Replace `<raspberry-pi-ip-address>` with the IP address of the Raspberry Pi.
+## Notes
 
-4. The video stream should start playing in the web browser.
+- Ensure the script has access to the camera device (`/dev/video0` by default).
+- The script will display the video feed with detected license plate numbers.
+
+## Contributing
+
+Contributions are welcome! Feel free to submit issues or pull requests.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
