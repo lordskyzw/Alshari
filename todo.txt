@@ -1,0 +1,9 @@
+if a car is not registered, ring the intercom and send text message to residential owner
+a signal could be sent to the microcontroller which in turn sends a signal to the intercom interfacing circuit
+
+
+how to register for new cars:
+    make the database online
+    webapp?
+
+registered residents should have the ability to add visitors, so that they are allowed access before hand

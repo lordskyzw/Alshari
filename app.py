@@ -4,6 +4,12 @@ from utils.dbops import query_db_for_plate
 import serial, sqlite3, cv2
 from time import sleep
 
+# Constants
+MAX_ATTEMPS = 3
+MOTION_THRESHOLD = 100
+GATE_OPEN_DELAY = 20
+INTERCOM_NOTIFY_DELAY = 120
+
 def setup():
     ###################################################### ROBOFLOW OPERATIONS ######################################################
     robo_api_key = "" #stored in Documents/api_keys
@@ -35,7 +41,6 @@ def setup():
 
 
 def mainloop(model, ser):
-    max_attempts = 3
     
     while True:
         while True:
@@ -49,11 +54,11 @@ def mainloop(model, ser):
         
         #special attention is needed here        
         fgmask = fgbg.apply(frame)
-        motion_detected = cv2.countNonZero(fgmask) > 100  # Adjust the threshold as needed
+        motion_detected = cv2.countNonZero(fgmask) > MOTION_THRESHOLD  # Adjust the threshold
 
         if motion_detected:
             cv2.imwrite("live.jpg", frame)
-            for attempt in range(max_attempts):
+            for attempt in range(MAX_ATTEMPS):
             
                 prediction = model.predict("live.jpg")
                 for pred in prediction.predictions:
@@ -65,17 +70,26 @@ def mainloop(model, ser):
                         result = query_db_for_plate(plate_number=plate_number)
                         
                         if result:
+                            try:
+                                with open(file='success_logs.txt', mode='a') as success_logs:
+                                    success_logs.write(f'ADMITTED ========================================: {result}')
+                            except Exception as e:
+                                with open(file='err_logs.txt', mode='a') as err_logs:
+                                    err_logs.write(str(e))
+                                    err_logs.close()
                             ser.write(b'OPEN_GATE\n')
-                            sleep(20)
+                            sleep(GATE_OPEN_DELAY)
                             continue
-                            
                         else:
-                            #send a message to the owner of the premise to notify them of the new visitor
+                            # Send a signal to the Arduino to ring the intercom
+                            ser.write(b'RING_INTERCOM\n')
+                            sleep(INTERCOM_NOTIFY_DELAY)
                             pass
                         
                     except Exception as e:
-                        print(e)
-                        print("Failed to recognize plate number. Retrying...")
+                        with open(file='err_logs.txt', mode='a') as err_logs:
+                            err_logs.write(str(e))
+                            err_logs.close()
                         continue
         else:
             continue
