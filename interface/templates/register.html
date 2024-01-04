@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Register a New Number Plate</h2>
+    <form method="POST">
+        <label for="number_plate">Number Plate:</label>
+        <input type="text" name="number_plate" id="number_plate" required>
+        <br>
+        <label for="owner">Owner:</label>
+        <input type="text" name="owner" id="owner" required>
+        <br>
+        <input type="submit" value="Register">
+    </form>
+{% endblock %}

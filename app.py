@@ -1,3 +1,6 @@
+################################################ This is the barebones of the app. ########################################################
+
+
 from roboflow import Roboflow
 from utils.ocr import text_extractor, get_license_plate_region
 from utils.dbops import query_db_for_plate

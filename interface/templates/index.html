@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Registration</title>
+</head>
+<body>
+    <h1>Vehicle Registration</h1>
+    
+    <form method="post" action="/register">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        
+        <label for="plate">Number Plate:</label>
+        <input type="text" id="plate" name="plate" required>
+        
+        <button type="submit">Register</button>
+    </form>
+
+    <h2>Residents</h2>
+    <ul>
+        {% for user in users %}
+            <li>
+                {{ user.name }} - {{ user.plate }}
+                <a href="/delete/{{ user.id }}">Delete</a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Entry Logs</h2>
+    <table id="logsTable">
+        <thead>
+            <tr>
+                <th>Number Plate</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in entries %}
+            <tr>
+                <td>{{ entry.plate }}</td>
+                <td>{{ entry.timestamp }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script type="text/javascript">
+        var socket = io();
+        socket.on('update_entries', function(data) {
+            var table = document.getElementById('logsTable').getElementsByTagName('tbody')[0];
+            var newRow = table.insertRow(table.rows.length);
+            newRow.innerHTML = '<td>' + data.plate + '</td><td>' + data.timestamp + '</td>';
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Automated Gate System</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to the Automated Gate System</h1>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('register_plate') }}">Register Plate</a></li>
+                <li><a href="{{ url_for('view_logs') }}">View Logs</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>
