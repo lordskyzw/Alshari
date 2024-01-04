@@ -1,14 +1,22 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h2>Register a New Number Plate</h2>
-    <form method="POST">
-        <label for="number_plate">Number Plate:</label>
-        <input type="text" name="number_plate" id="number_plate" required>
-        <br>
-        <label for="owner">Owner:</label>
-        <input type="text" name="owner" id="owner" required>
-        <br>
-        <input type="submit" value="Register">
-    </form>
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <h2 class="text-center mt-4">Register a New Number Plate</h2>
+            <form method="POST" class="mt-4">
+                <div class="form-group">
+                    <label for="number_plate">Number Plate:</label>
+                    <input type="text" class="form-control" name="number_plate" id="number_plate" required>
+                </div>
+                <div class="form-group">
+                    <label for="owner">Owner:</label>
+                    <input type="text" class="form-control" name="owner" id="owner" required>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Register</button>
+                </div>
+            </form>
+        </div>
+    </div>
 {% endblock %}

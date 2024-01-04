@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, Response
 from flask_socketio import SocketIO
 from models import db, Entry, Plate  # Importing the models from models.py
+import cv2
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # Adjust as per your database file
@@ -8,9 +9,34 @@ app.config['SECRET_KEY'] = 'secret'
 db.init_app(app)
 socketio = SocketIO(app)
 
+def gen_frames():  
+    # Connect to the RTSP stream
+    cap = cv2.VideoCapture('rtsp://your_camera_ip:554/live/main/av_stream')
+
+    while True:
+        success, frame = cap.read()  # read the camera frame
+        if not success:
+            break
+        else:
+            # Optional: Apply any processing on the frame here
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+
 @app.route('/')
 def index():
     return render_template('base.html')
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/feed')
+def feed():
+    return render_template('feed.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_plate():

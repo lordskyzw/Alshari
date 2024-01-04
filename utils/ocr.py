@@ -10,7 +10,6 @@ def get_license_plate_region(image_path, prediction):
     cv2.imwrite("plate_region.jpg", plate_region)
     return plate_region
 
-
 def encode_image(image_path):
   with open(image_path, "rb") as image_file:
     return base64.b64encode(image_file.read()).decode('utf-8')

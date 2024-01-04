@@ -1,0 +1,7 @@
+﻿Name,Quantity,Component
+"Ucontroller",1," Arduino Uno R3"
+"D1",1,"Red LED"
+"R1",1,"150 Ω Resistor"
+"K1",1," Relay DPDT"
+"M1",1," Hobby Gearmotor"
+"BAT1",1," 9V Battery"
