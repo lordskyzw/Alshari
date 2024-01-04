@@ -1,4 +1,4 @@
-const int relayPin = 13;  // relay connected to pin 13
+const int relayPin = 7;  // relay connected to pin 13
 
 void setup() {
   Serial.begin(9600);
