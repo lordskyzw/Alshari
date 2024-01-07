@@ -3,6 +3,7 @@
 {% block content %}
     <div class="row justify-content-center">
         <div class="col-lg-6 col-md-8">
+            <!-- Registration Form -->
             <h2 class="text-center mt-4">Register a New Number Plate</h2>
             <form method="POST" class="mt-4">
                 <div class="form-group">
@@ -17,6 +18,38 @@
                     <button type="submit" class="btn btn-primary">Register</button>
                 </div>
             </form>
+            <!-- ... Your existing form ... -->
+        </div>
+    </div>
+
+    <!-- Section for registered plates -->
+    <div class="row mt-5">
+        <div class="col-lg-12">
+            <h3 class="text-center">Registered Number Plates:</h3>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Number Plate</th>
+                            <th scope="col">Owner</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plate in plates %}
+                            <tr>
+                                <td>{{ plate.number_plate }}</td>
+                                <td>{{ plate.owner }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('delete_plate', plate_id=plate.id) }}">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 {% endblock %}

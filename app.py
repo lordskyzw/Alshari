@@ -5,7 +5,8 @@ from roboflow import Roboflow
 from utils.ocr import text_extractor, get_license_plate_region
 from utils.dbops import query_db_for_plate
 import serial, sqlite3, cv2
-from time import sleep
+import logging
+import requests
 
 def setup():
     ###################################################### ROBOFLOW OPERATIONS ######################################################
@@ -19,8 +20,8 @@ def setup():
 
 
     ###################################################### ARDUINO OPERATIONS ######################################################
-    # Open a serial connection to the Arduino
-    arduino_port = "COMX"  # Replace "COMX" with the actual port the Arduino is connected to
+    # Open a serial connection to ESP32
+    arduino_port = "COMX"  # Replace "COMX" with the actual port ESP32 is connected to
     arduino_baudrate = 9600  # Use the baud rate configured on the Arduino
     ser = serial.Serial(arduino_port, arduino_baudrate, timeout=1)
 
@@ -52,7 +53,7 @@ def mainloop(model, ser):
         
         #special attention is needed here        
         fgmask = fgbg.apply(frame)
-        motion_detected = cv2.countNonZero(fgmask) > 100  # Adjust the threshold as needed
+        motion_detected = cv2.countNonZero(fgmask) > 15000  # Adjust the threshold as needed
 
         if motion_detected:
             cv2.imwrite("live.jpg", frame)
@@ -69,16 +70,21 @@ def mainloop(model, ser):
                         
                         if result:
                             ser.write(b'OPEN_GATE\n')
-                            sleep(20)
-                            continue
-                            
+                            # record the entry in the db
+                            response = requests.post(url='http://127.0.0.1:5000/record_entry', json={'plate': plate_number})
+                            if response.status_code == 200:
+                                #send a message to the owner of the premise to notify them of the entry
+                                pass
+                            else:
+                                logging.error("Failed to record entry")
+                
                         else:
                             #send a message to the owner of the premise to notify them of the new visitor
                             pass
                         
                     except Exception as e:
-                        print(e)
-                        print("Failed to recognize plate number. Retrying...")
+                        logging.error(e)
+                        logging.error("Failed to recognize plate number. Retrying...")
                         continue
         else:
             continue

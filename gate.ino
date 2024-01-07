@@ -1,10 +1,10 @@
-const int relayPin = 13;  // relay connected to pin 13
+const int driverPin = 13;  // relay connected to pin 13
 
 void setup() {
   Serial.begin(9600);
-  pinMode(relayPin, OUTPUT);
+  pinMode(driverPin, OUTPUT);
   //relay is initially in the closed position
-  digitalWrite(relayPin, HIGH);
+  digitalWrite(driverPin, HIGH);
 }
 
 void loop() {
@@ -15,9 +15,9 @@ void loop() {
     // Check if the command is to open the gate
     if (command == "OPEN_GATE") {
       // Trigger the relay to open the gate
-      digitalWrite(relayPin, LOW);
+      digitalWrite(driverPin, LOW);
       delay(15000);
-      digitalWrite(relayPin, HIGH); 
+      digitalWrite(driverPin, HIGH); 
     }
   }
 }
