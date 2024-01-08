@@ -2,7 +2,7 @@
 
 from roboflow import Roboflow
 from utils.ocr import text_extractor, get_license_plate_region
-from utils.dbops import query_db_for_plate
+from utils.dbops import query_db_for_plate, handle_rfid_scan
 import serial, sqlite3, cv2
 import logging
 import requests
@@ -52,50 +52,55 @@ def setup():
 def mainloop(model, ser):
     
     while True:
-    # Read from the serial port
-    if ser.in_waiting:
-        line = ser.readline().decode('utf-8').strip()
-        if line == "Vehicle detected":
-            vehicle_present = True
-        else:
-            vehicle_present = False
-    
-    if vehicle_present:
-        ret, frame = cap.read()
         
-        if ret:
-            cv2.imwrite("live.jpg", frame)
-            for attempt in range(max_attempts):
+        vehicle_present = False
+        # Read from the serial port
+        if ser.in_waiting:
+            line = ser.readline().decode('utf-8').strip()
+            
+            if line == "Vehicle detected":
+                vehicle_present = True
+            elif line.startswith("RFID:"):
+                rfid_tag = line.split("RFID:")[1].strip()
+                handle_rfid_scan(rfid_tag)
                 
-                prediction = model.predict("live.jpg")
-                for pred in prediction.predictions:
+        
+        if vehicle_present:
+            ret, frame = cap.read()
+            
+            if ret:
+                cv2.imwrite("live.jpg", frame)
+                for attempt in range(max_attempts):
+                    
+                    prediction = model.predict("live.jpg")
+                    for pred in prediction.predictions:
 
-                    plate_region = get_license_plate_region(image="live.jpg", prediction=pred)
-                    cv2.imwrite("plate_region.jpg", plate_region)
-                    try:
-                        plate_number = text_extractor(image_path="plate_region.jpg")
-                        result = query_db_for_plate(plate_number=plate_number)
-                        
-                        if result:
-                            ser.write(b'OPEN_GATE\n')
-                            # record the entry in the db
-                            response = requests.post(url='http://127.0.0.1:5000/record_entry', json={'plate': plate_number})
-                            if response.status_code == 200:
-                                #send a message to the owner of the premise to notify them of the entry
-                                pass
+                        plate_region = get_license_plate_region(image="live.jpg", prediction=pred)
+                        cv2.imwrite("plate_region.jpg", plate_region)
+                        try:
+                            plate_number = text_extractor(image_path="plate_region.jpg")
+                            result = query_db_for_plate(plate_number=plate_number)
+                            
+                            if result:
+                                ser.write(b'OPEN_GATE\n')
+                                # record the entry in the db
+                                response = requests.post(url='http://127.0.0.1:5000/record_entry', json={'plate': plate_number})
+                                if response.status_code == 200:
+                                    # send a message to the owner of the premise to notify them of the entry
+                                    pass
+                                else:
+                                    logging.error("Failed to record entry")
+                    
                             else:
-                                logging.error("Failed to record entry")
-                
-                        else:
-                            #send a message to the owner of the premise to notify them of the new visitor
-                            pass
-                        
-                    except Exception as e:
-                        logging.error(e)
-                        logging.error("Failed to recognize plate number. Retrying...")
-                        continue
-        else:
-            continue
+                                # send a message to the owner of the premise to notify them of the new visitor
+                                pass
+                            
+                        except Exception as e:
+                            logging.error(e)
+                            logging.error("Failed to recognize plate number. Retrying...")
+                            continue
+            else:
+                continue
 
 
 if __name__ == "__main__":

@@ -103,6 +103,15 @@ def record_entry():
     socketio.emit('update_entries', {'plate': plate, 'timestamp': new_entry.timestamp.strftime('%Y-%m-%d %H:%M:%S')}, broadcast=True)
     return {'status': 'success'}
 
+@app.route('/record_rfid', methods=['POST'])
+def record_rfid():
+    data = request.json
+    employee_name = data.get('employee')
+    # Assuming there's a separate table or field for RFID entries
+    new_rfid_entry = Entry(employee=employee_name, timestamp=datetime.datetime.now())
+    db.session.add(new_rfid_entry)
+    db.session.commit()
+    return jsonify({'status': 'success', 'message': 'RFID entry recorded'})
 
 if __name__ == '__main__':
     with app.app_context():

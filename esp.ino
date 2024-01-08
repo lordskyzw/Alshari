@@ -40,7 +40,7 @@ void setup() {
   Serial.begin(115200);
   SPI.begin();      
   rfid.PCD_Init();
-  moveToInitialPosition();
+  moveToClosedPosition();
 }
 
 void loop() {
