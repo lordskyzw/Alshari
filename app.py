@@ -42,23 +42,19 @@ def mainloop(model, ser):
     max_attempts = 3
     
     while True:
-        while True:
-            ret, frame = cap.read()
-            if ret:
-                #captured frame so break out of the capture loop
-                break
-            else:
-                #failed to capture frame so try again
-                continue
-        
-        #special attention is needed here        
-        fgmask = fgbg.apply(frame)
-        motion_detected = cv2.countNonZero(fgmask) > 15000  # Adjust the threshold as needed
-
-        if motion_detected:
+    # Read from the serial port
+    if ser.in_waiting:
+        line = ser.readline().decode('utf-8').strip()
+        if line == "Vehicle detected":
+            vehicle_present = True
+        else:
+            vehicle_present = False
+    
+    if vehicle_present:
+        ret, frame = cap.read()
+        if ret:
             cv2.imwrite("live.jpg", frame)
             for attempt in range(max_attempts):
-            
                 prediction = model.predict("live.jpg")
                 for pred in prediction.predictions:
 

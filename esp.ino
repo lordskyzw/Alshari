@@ -1,3 +1,5 @@
+// this is the prototype version, it exclude the IR Sensor
+
 #include <MFRC522.h>
 
 // Define RFID and other variables
@@ -13,7 +15,8 @@ const int grn = 27;
 const int red = 14;
 const int m1 = 13;
 const int m2 = 12;
-const int irReceiverPin = 15; // IR receiver pin for obstacle detection
+const int motionSensorPin = 15; // Motion sensor pin for vehicle detection
+//const int irReceiverPin = 15; // IR receiver pin for obstacle detection
 
 const int encoderPinA = 16;  // Encoder Pin A
 const int encoderPinB = 17;  // Encoder Pin B
@@ -31,7 +34,8 @@ void setup() {
   pinMode(red, OUTPUT);
   pinMode(m1, OUTPUT);
   pinMode(m2, OUTPUT);
-  pinMode(irReceiverPin, INPUT); // Initialize IR receiver pin as input
+  //pinMode(irReceiverPin, INPUT); // Initialize IR receiver pin as input
+  pinMode(motionSensorPin, INPUT); // Initialize motion sensor pin as input
   pinMode(encoderPinA, INPUT_PULLUP); // Enable internal pull-up
   pinMode(encoderPinB, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(encoderPinA), updateEncoder, CHANGE);
@@ -43,25 +47,34 @@ void setup() {
 }
 
 void loop() {
+  checkVehiclePresence();
   readTag();
   readSerialCommands();
   controlGate();
 }
 
+void checkVehiclePresence(){
+  //this function uses the motion sensor to detect vehicle presence
+  //if a vehicle is detected, it sends serial communication to the server to start the camera and begin number plate recognition
+
+  if (digitalRead(motionSensorPin) == HIGH) {
+    Serial.println("Vehicle detected");
+  }
+}
+
 void moveToClosedPosition() {
   // Check if the gate is already in the closed position
-  if (encoderPos != encoderTargetPosClosed) {
+  while (encoderPos != encoderTargetPosClosed) {
     closeGate();
 
     // Continuously monitor until the gate is fully closed
-    while (encoderPos != encoderTargetPosClosed) {
-      if (digitalRead(irReceiverPin) == LOW) {
-        pauseGate();
-        return;
-      }
+    // while (encoderPos != encoderTargetPosClosed) {
+    //   if (digitalRead(irReceiverPin) == LOW) {
+    //     pauseGate();
+    //     return;
+    //   }
     }
     pauseGate(); // Stop the gate once it's fully closed
-  }
 }
 
 void openGate() {
@@ -140,26 +153,26 @@ void readSerialCommands() {
 
 void controlGate() {
   if (gateMoving) {
-    // Check if the IR sensor is triggered and the gate is closing
-    if (digitalRead(irReceiverPin) == LOW && gateClosing) {
-      pauseGate(); // Stop the gate if the IR beam is broken during closing
-      Serial.println("Obstacle detected, gate stopped.");
-    } else {
+    // // Check if the IR sensor is triggered and the gate is closing
+    // if (digitalRead(irReceiverPin) == LOW && gateClosing) {
+    //   pauseGate(); // Stop the gate if the IR beam is broken during closing
+    //   Serial.println("Obstacle detected, gate stopped.");
+    // } else {
       // Check if the gate has reached its target position
-      if (encoderPos == encoderTargetPos) {
-        gateMoving = false; // Stop the gate if the target position is reached
-        pauseGate(); // Use pauseGate function to stop the motor
-        Serial.println("Target position reached, gate stopped.");
+    if (encoderPos == encoderTargetPos) {
+      gateMoving = false; // Stop the gate if the target position is reached
+      pauseGate(); // Use pauseGate function to stop the motor
+      Serial.println("Target position reached, gate stopped.");
+    } else {
+      // Adjust the motor control to move towards the target position
+      if (encoderPos < encoderTargetPos) {
+        openGate(); // Continue opening the gate
       } else {
-        // Adjust the motor control to move towards the target position
-        if (encoderPos < encoderTargetPos) {
-          openGate(); // Continue opening the gate
-        } else {
-          closeGate(); // Continue closing the gate
-        }
+        closeGate(); // Continue closing the gate
       }
     }
   }
 }
+
 
 
