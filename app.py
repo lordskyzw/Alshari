@@ -28,10 +28,22 @@ def setup():
     ##################################################### DATABASE OPERATIONS ######################################################
     conn = sqlite3.connect('database.db')
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS plates (plate_number text, owner text)''')
+
+    # Table for vehicle information
+    c.execute('''CREATE TABLE IF NOT EXISTS vehicles (
+                    plate_number TEXT, 
+                    owner TEXT
+                )''')
+
+    # Table for RFID tags
+    c.execute('''CREATE TABLE IF NOT EXISTS rfid_tags (
+                    rfid_tag TEXT,
+                    employee_name TEXT
+                )''')
+
     conn.commit()
     conn.close()
-    
+
     return (model, ser)
 
 ###################################################### APP LOGIC ######################################################
