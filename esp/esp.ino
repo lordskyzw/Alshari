@@ -10,9 +10,6 @@ String tag = "";
 String incoming = "";
 
 // Define pin assignments
-const int led = 26;
-const int grn = 27;
-const int red = 14;
 const int m1 = 13;
 const int m2 = 12;
 const int motionSensorPin = 34;
@@ -35,21 +32,20 @@ void setup() {
   pinMode(m1, OUTPUT);
   pinMode(m2, OUTPUT);
   pinMode(motionSensorPin, INPUT);
-  pinMode(encoderPinA, INPUT_PULLUP); // Enable internal pull-up
-  pinMode(encoderPinB, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(encoderPinA), updateEncoder, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(encoderPinB), updateEncoder, CHANGE);
+  // pinMode(encoderPinA, INPUT_PULLUP); // Enable internal pull-up
+  // pinMode(encoderPinB, INPUT_PULLUP);
+  // attachInterrupt(digitalPinToInterrupt(encoderPinA), updateEncoder, CHANGE);
+  // attachInterrupt(digitalPinToInterrupt(encoderPinB), updateEncoder, CHANGE);
   Serial.begin(115200);
   SPI.begin();      
   rfid.PCD_Init();
-  moveToClosedPosition();
+  //moveToClosedPosition();
 }
 
 void loop() {
   checkVehiclePresence();
-  readTag();
   readSerialCommands();
-  controlGate();
+  //controlGate();
 }
 
 void checkVehiclePresence(){
@@ -58,25 +54,15 @@ void checkVehiclePresence(){
   }
 }
 
-void moveToClosedPosition() {
-  while (encoderPos != encoderTargetPosClosed) {
-    closeGate();
-  }
-  pauseGate();
-}
+// void moveToClosedPosition() {
+//   while (encoderPos != encoderTargetPosClosed) {
+//     closeGate();
+//   }
+//   pauseGate();
+// }
 
 void openGate() {
-  encoderTargetPos = encoderTargetPosOpen;
-  gateMoving = true;
-  digitalWrite(red, HIGH);
-  digitalWrite(grn, LOW);
-  digitalWrite(m1, HIGH);
-  digitalWrite(m2, LOW);
-  gateClosing = false;
-}
-
-void openPedestrian() {
-  encoderTargetPos = encoderTargetPosPedestrian;
+  //encoderTargetPos = encoderTargetPosOpen;
   gateMoving = true;
   digitalWrite(red, HIGH);
   digitalWrite(grn, LOW);
@@ -86,7 +72,7 @@ void openPedestrian() {
 }
 
 void closeGate() {
-  encoderTargetPos = encoderTargetPosClosed;
+  //encoderTargetPos = encoderTargetPosClosed;
   gateMoving = true;
   digitalWrite(red, LOW);
   digitalWrite(grn, HIGH);
@@ -101,38 +87,6 @@ void pauseGate() {
   gateClosing = false;
 }
 
-void updateEncoder() {
-  int MSB = digitalRead(encoderPinA); // MSB = most significant bit
-  int LSB = digitalRead(encoderPinB); // LSB = least significant bit
-
-  int encoded = (MSB << 1) | LSB; // Converting the 2 pin value to single number
-  int sum = (lastEncoded << 2) | encoded; // Adding it to the previous encoded value
-
-  if (sum == 0b1101 || sum == 0b0100 || sum == 0b0010 || sum == 0b1011) encoderPos++;
-  if (sum == 0b1110 || sum == 0b0111 || sum == 0b0001 || sum == 0b1000) encoderPos--;
-
-  lastEncoded = encoded; // Store this value for next time
-}
-
-
-void readTag() {
-  if (!rfid.PICC_IsNewCardPresent()) {
-    return;
-  }
-  if (rfid.PICC_ReadCardSerial()) {
-    tag = "";
-    for (byte i = 0; i < 4; i++) {
-      tag += String(rfid.uid.uidByte[i], HEX);
-    }
-    Serial.println(tag);
-    digitalWrite(led, HIGH);
-    delay(50);
-    digitalWrite(led, LOW);
-    rfid.PICC_HaltA();
-    rfid.PCD_StopCrypto1();
-  }
-}
-
 void readSerialCommands() {
   if (Serial.available() > 0) {
     incoming = Serial.readStringUntil('\n');
@@ -143,34 +97,32 @@ void readSerialCommands() {
       closeGate();
     } else if (incoming == "pauseGate") {
       pauseGate();
-    } else if (incoming == "openPedestrian"){
-      openPedestrian();
-    } 
+    }
     else {
       Serial.println("Incorrect Command");
     }
   }
 }
 
-void controlGate() {
-  //after handling opening of the gate and closing of the gate during (if (gateMoving))), it closes the gate as that is the default state
-  if (gateMoving) {
-    if (encoderPos == encoderTargetPos) {
-      gateMoving = false; 
-      pauseGate(); 
-      Serial.println("Target position reached, gate stopped.");
-    } else {
-      if (encoderPos < encoderTargetPos) {
-        openGate();
-      } else {
-        closeGate();
-      }
-    }
-  } else {
-    delay(15000);
-    closeGate();
-  }
-}
+// void controlGate() {
+//   //after handling opening of the gate and closing of the gate during (if (gateMoving))), it closes the gate as that is the default state
+//   if (gateMoving) {
+//     if (encoderPos == encoderTargetPos) {
+//       gateMoving = false; 
+//       pauseGate(); 
+//       Serial.println("Target position reached, gate stopped.");
+//     } else {
+//       if (encoderPos < encoderTargetPos) {
+//         openGate();
+//       } else {
+//         closeGate();
+//       }
+//     }
+//   } else {
+//     delay(15000);
+//     closeGate();
+//   }
+// }
 
 
 
