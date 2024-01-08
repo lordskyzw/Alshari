@@ -26,9 +26,9 @@ bool gateClosing = false;
 bool gateMoving = false; 
 
 void setup() {
-  pinMode(led, OUTPUT);
-  pinMode(grn, OUTPUT);
-  pinMode(red, OUTPUT);
+  // pinMode(led, OUTPUT);
+  // pinMode(grn, OUTPUT);
+  // pinMode(red, OUTPUT);
   pinMode(m1, OUTPUT);
   pinMode(m2, OUTPUT);
   pinMode(motionSensorPin, INPUT);

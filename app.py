@@ -70,42 +70,40 @@ def mainloop(model, ser):
             
             if ret:
                 cv2.imwrite("live.jpg", frame)
-                for attempt in range(max_attempts):
-                    
-                    prediction = model.predict("live.jpg")
-                    for pred in prediction.predictions:
+                prediction = model.predict("live.jpg")
+                for pred in prediction.predictions:
 
-                        plate_region = get_license_plate_region(image="live.jpg", prediction=pred)
-                        cv2.imwrite("plate_region.jpg", plate_region)
-                        try:
-                            plate_number = text_extractor(image_path="plate_region.jpg")
-                            result = query_db_for_plate(plate_number=plate_number)
-                            
-                            if result:
-                                ser.write(b'OPEN_GATE\n')
-                                # record the entry in the db
-                                response = requests.post(url='http://127.0.0.1:5000/record_entry', json={'plate': plate_number})
-                                if response.status_code == 200:
-                                    # send a message to the owner of the premise to notify them of the entry
-                                    pass
-                                else:
-                                    logging.error("Failed to record entry")
-                    
-                            else:
-                                # send a message to the owner of the premise to notify them of the new visitor
+                    plate_region = get_license_plate_region(image="live.jpg", prediction=pred)
+                    cv2.imwrite("plate_region.jpg", plate_region)
+                    try:
+                        plate_number = text_extractor(image_path="plate_region.jpg")
+                        result = query_db_for_plate(plate_number=plate_number)
+                        
+                        if result:
+                            ser.write(b'OPEN_GATE\n')
+                            # record the entry in the db
+                            response = requests.post(url='http://127.0.0.1:5000/record_entry', json={'plate': plate_number})
+                            if response.status_code == 200:
+                                # send a message to the owner of the premise to notify them of the entry
                                 pass
-                            
-                        except Exception as e:
-                            logging.error(e)
-                            logging.error("Failed to recognize plate number. Retrying...")
-                            continue
+                            else:
+                                logging.error("Failed to record entry")
+                
+                        else:
+                            # send a message to the owner of the premise to notify them of the new visitor
+                            pass
+                        
+                    except Exception as e:
+                        logging.error(e)
+                        logging.error("Failed to recognize plate number. Retrying...")
+                        continue
             else:
                 continue
 
 
 if __name__ == "__main__":
     model, ser = setup()
-    cap = cv2.VideoCapture('rtsp://your_camera_ip:554/live/main/av_stream')
+    cap = cv2.VideoCapture(0)
     mainloop(model=model, ser=ser)
     
     
