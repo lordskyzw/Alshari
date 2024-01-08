@@ -1,6 +1,5 @@
 ################################################ This is the barebones of the app. ########################################################
 
-
 from roboflow import Roboflow
 from utils.ocr import text_extractor, get_license_plate_region
 from utils.dbops import query_db_for_plate
@@ -39,7 +38,6 @@ def setup():
 
 
 def mainloop(model, ser):
-    max_attempts = 3
     
     while True:
     # Read from the serial port
@@ -52,9 +50,11 @@ def mainloop(model, ser):
     
     if vehicle_present:
         ret, frame = cap.read()
+        
         if ret:
             cv2.imwrite("live.jpg", frame)
             for attempt in range(max_attempts):
+                
                 prediction = model.predict("live.jpg")
                 for pred in prediction.predictions:
 
@@ -89,11 +89,6 @@ def mainloop(model, ser):
 if __name__ == "__main__":
     model, ser = setup()
     cap = cv2.VideoCapture('rtsp://your_camera_ip:554/live/main/av_stream')
-    fgbg = cv2.createBackgroundSubtractorMOG2()
     mainloop(model=model, ser=ser)
-    
-    # Release the camera and close the window
-    # cap.release()
-    # cv2.destroyAllWindows()
     
     

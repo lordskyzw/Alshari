@@ -15,18 +15,16 @@ const int grn = 27;
 const int red = 14;
 const int m1 = 13;
 const int m2 = 12;
-const int motionSensorPin = 15; // Motion sensor pin for vehicle detection
-//const int irReceiverPin = 15; // IR receiver pin for obstacle detection
-
+const int motionSensorPin = 15;
 const int encoderPinA = 16;  // Encoder Pin A
 const int encoderPinB = 17;  // Encoder Pin B
 volatile long encoderPos = 0;
 long lastEncoderPos = 0;
 int encoderTargetPosOpen = 1000;   // Encoder position when gate is fully open
+int encoderTargetPosPedestrian = 250; // Encoder position when gate is open for pedestrian
 int encoderTargetPosClosed = 0;    // Encoder position when gate is fully closed
-
-bool gateClosing = false; // Flag to indicate if the gate is closing
-bool gateMoving = false;  // Flag to indicate if the gate is moving
+bool gateClosing = false;
+bool gateMoving = false; 
 
 void setup() {
   pinMode(led, OUTPUT);
@@ -34,8 +32,7 @@ void setup() {
   pinMode(red, OUTPUT);
   pinMode(m1, OUTPUT);
   pinMode(m2, OUTPUT);
-  //pinMode(irReceiverPin, INPUT); // Initialize IR receiver pin as input
-  pinMode(motionSensorPin, INPUT); // Initialize motion sensor pin as input
+  pinMode(motionSensorPin, INPUT);
   pinMode(encoderPinA, INPUT_PULLUP); // Enable internal pull-up
   pinMode(encoderPinB, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(encoderPinA), updateEncoder, CHANGE);
@@ -54,31 +51,30 @@ void loop() {
 }
 
 void checkVehiclePresence(){
-  //this function uses the motion sensor to detect vehicle presence
-  //if a vehicle is detected, it sends serial communication to the server to start the camera and begin number plate recognition
-
   if (digitalRead(motionSensorPin) == HIGH) {
     Serial.println("Vehicle detected");
   }
 }
 
 void moveToClosedPosition() {
-  // Check if the gate is already in the closed position
   while (encoderPos != encoderTargetPosClosed) {
     closeGate();
-
-    // Continuously monitor until the gate is fully closed
-    // while (encoderPos != encoderTargetPosClosed) {
-    //   if (digitalRead(irReceiverPin) == LOW) {
-    //     pauseGate();
-    //     return;
-    //   }
-    }
-    pauseGate(); // Stop the gate once it's fully closed
+  }
+  pauseGate();
 }
 
 void openGate() {
   encoderTargetPos = encoderTargetPosOpen;
+  gateMoving = true;
+  digitalWrite(red, HIGH);
+  digitalWrite(grn, LOW);
+  digitalWrite(m1, HIGH);
+  digitalWrite(m2, LOW);
+  gateClosing = false;
+}
+
+void openPedestrian() {
+  encoderTargetPos = encoderTargetPosPedestrian;
   gateMoving = true;
   digitalWrite(red, HIGH);
   digitalWrite(grn, LOW);
@@ -145,32 +141,32 @@ void readSerialCommands() {
       closeGate();
     } else if (incoming == "pauseGate") {
       pauseGate();
-    } else {
+    } else if (incoming == "openPedestrian"){
+      openPedestrian();
+    } 
+    else {
       Serial.println("Incorrect Command");
     }
   }
 }
 
 void controlGate() {
+  //after handling opening of the gate and closing of the gate during (if (gateMoving))), it closes the gate as that is the default state
   if (gateMoving) {
-    // // Check if the IR sensor is triggered and the gate is closing
-    // if (digitalRead(irReceiverPin) == LOW && gateClosing) {
-    //   pauseGate(); // Stop the gate if the IR beam is broken during closing
-    //   Serial.println("Obstacle detected, gate stopped.");
-    // } else {
-      // Check if the gate has reached its target position
     if (encoderPos == encoderTargetPos) {
-      gateMoving = false; // Stop the gate if the target position is reached
-      pauseGate(); // Use pauseGate function to stop the motor
+      gateMoving = false; 
+      pauseGate(); 
       Serial.println("Target position reached, gate stopped.");
     } else {
-      // Adjust the motor control to move towards the target position
       if (encoderPos < encoderTargetPos) {
-        openGate(); // Continue opening the gate
+        openGate();
       } else {
-        closeGate(); // Continue closing the gate
+        closeGate();
       }
     }
+  } else {
+    delay(15000);
+    closeGate();
   }
 }
 
