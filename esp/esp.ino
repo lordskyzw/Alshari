@@ -56,9 +56,29 @@ void setup() {
 }
 
 void loop() {
+  readTag();
   checkVehiclePresence();
   readSerialCommands();
   //controlGate();
+}
+
+
+void readTag() {
+  if (!rfid.PICC_IsNewCardPresent()) {
+    return;
+  }
+  if (rfid.PICC_ReadCardSerial()) {
+    tag = "";
+    for (byte i = 0; i < 4; i++) {
+      tag += String(rfid.uid.uidByte[i], HEX);
+    }
+    Serial.println(tag);
+    digitalWrite(led, HIGH);
+    delay(50);
+    digitalWrite(led, LOW);
+    rfid.PICC_HaltA();
+    rfid.PCD_StopCrypto1();
+  }
 }
 
 void checkVehiclePresence() {
