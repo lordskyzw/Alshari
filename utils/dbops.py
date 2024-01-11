@@ -4,7 +4,7 @@ import logging
 
 def query_db_for_plate(plate_number):
     # Query the database to recognize the plate number
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(database='../interface/instance/database.db')
     c = conn.cursor()
     c.execute("SELECT * FROM plates WHERE plate_number=?", (plate_number,))
     result = c.fetchone()
