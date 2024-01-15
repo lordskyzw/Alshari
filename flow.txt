@@ -15,3 +15,4 @@ the gate is opened through a connection to the microcontroller
 the microcontroller is connected to a relay switch
 the relay switch is connected to the gate motor 
 the gate motor is powered by a spearate 12 V or 24 V 
+there is a three second delay
