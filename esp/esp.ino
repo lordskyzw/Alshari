@@ -1,174 +1,123 @@
-// this is the prototype version, it exclude the IR Sensor
-
 #include <MFRC522.h>
+#include <Arduino.h>
 
-// Define RFID and other variables
-constexpr uint8_t RST_PIN = 5;        
-constexpr uint8_t SS_PIN = 21;      
-MFRC522 rfid(SS_PIN, RST_PIN);
-String tag = "";
-String incoming = "";
+// Constants for LEDC
+const int servoChannel = 0;  // Use first channel of 16 available
+const int servoFrequency = 50;  // Standard servo frequency 50Hz
+const int servoResolution = 10;  // 10 bit resolution
 
-// Define pin assignments
-const int m1 = 13;
-const int m2 = 12;
-const int motionSensorPin = 34;
-const int red = 26;
-const int grn = 27;
-const int blue = 14;
-// const int encoderPinA = 16;  // Encoder Pin A
-// const int encoderPinB = 17;  // Encoder Pin B
+const int servoMinDuty = 512;  // Minimum duty cycle for servo (0 degrees)
+const int servoMaxDuty = 2560;  // Maximum duty cycle for servo (180 degrees)
+bool gatePaused = false;
 
-// define variables
-// volatile int lastEncoded = 0;
-// volatile long encoderTargetPos = 0;
-// volatile long encoderPos = 0;
-// long lastEncoderPos = 0;
-// int encoderTargetPosOpen = 1000;   // Encoder position when gate is fully open
-// int encoderTargetPosPedestrian = 250; // Encoder position when gate is open for pedestrian
-// int encoderTargetPosClosed = 0;    // Encoder position when gate is fully closed
-unsigned long lastVehicleDetectTime = 0;  // Global variable to store the last detection time
-int lastPIRState = LOW;  // Global variable to store the PIR state
-const unsigned long vehicleDetectInterval = 5000;  // Interval of 5 s
-unsigned long stime;
-bool gateClosing = false;
-bool gateMoving = false; 
-String gateState = "";
+// Constants for pin assignments
+constexpr uint8_t RESET_PIN = 5;
+constexpr uint8_t SS_PIN = 21;
+constexpr int MOTOR_PIN = 12;
+constexpr int MOTION_SENSOR_PIN = 34;
+constexpr int BLUE_LED_PIN = 26;
+constexpr int GREEN_LED_PIN = 27;
+constexpr int RED_LED_PIN = 14;
+
+// Constants for operation
+constexpr unsigned long VEHICLE_DETECTION_INTERVAL = 5000; // 5 seconds
+
+// Global variables
+unsigned long lastVehicleDetectedTime = 0;
+bool isVehiclePresent = false;
+String incomingCommand = "";
+
+// Initialize RFID and LED state
+//MFRC522 rfid(SS_PIN, RESET_PIN);
 
 void setup() {
-  // pinMode(led, OUTPUT);
-  // pinMode(grn, OUTPUT);
-  // pinMode(red, OUTPUT);
-  pinMode(m1, OUTPUT);
-  pinMode(m2, OUTPUT);
-  pinMode(motionSensorPin, INPUT);
-  pinMode(blue, OUTPUT);
-  pinMode(red, OUTPUT);
-  pinMode(grn, OUTPUT);
-  // pinMode(encoderPinA, INPUT_PULLUP); // Enable internal pull-up
-  // pinMode(encoderPinB, INPUT_PULLUP);
-  // attachInterrupt(digitalPinToInterrupt(encoderPinA), updateEncoder, CHANGE);
-  // attachInterrupt(digitalPinToInterrupt(encoderPinB), updateEncoder, CHANGE);
+  pinMode(MOTOR_PIN, OUTPUT);
+  pinMode(MOTION_SENSOR_PIN, INPUT);
+  pinMode(RED_LED_PIN, OUTPUT);
+  pinMode(GREEN_LED_PIN, OUTPUT);
+  pinMode(BLUE_LED_PIN, OUTPUT);
   Serial.begin(115200);
-  SPI.begin();      
-  rfid.PCD_Init();
-  //moveToClosedPosition();
+  SPI.begin();
+  //rfid.PCD_Init();
+  ledcSetup(servoChannel, servoFrequency, servoResolution);
+  ledcAttachPin(MOTOR_PIN, servoChannel);
+  
+  closeGate();
 }
 
 void loop() {
-  readTag();
   checkVehiclePresence();
   readSerialCommands();
-  //controlGate();
-}
-
-
-void readTag() {
-  if (!rfid.PICC_IsNewCardPresent()) {
-    return;
-  }
-  if (rfid.PICC_ReadCardSerial()) {
-    tag = "";
-    for (byte i = 0; i < 4; i++) {
-      tag += String(rfid.uid.uidByte[i], HEX);
-    }
-    Serial.println(tag);
-    digitalWrite(led, HIGH);
-    delay(50);
-    digitalWrite(led, LOW);
-    rfid.PICC_HaltA();
-    rfid.PCD_StopCrypto1();
-  }
 }
 
 void checkVehiclePresence() {
-// we need to check if it has been 5 seconds since the last detection
+  bool motionDetected = digitalRead(MOTION_SENSOR_PIN) == HIGH;
+  unsigned long currentTime = millis();
 
-  if (digitalRead(motionSensorPin) == HIGH) {
-    if (lastPIRState == LOW){//if the last state was low, then the vehicle has just arrived
-      digitalWrite(blue, HIGH);
-      Serial.println("Vehicle detected");
-      lastPIRState = HIGH;
-    }
-  }
-  else {//no motion detected
-    digitalWrite(blue, LOW);
-    if (lastPIRState == HIGH) {
-      lastPIRState = LOW;
-      digitalWrite(blue, LOW);
-    }
+  if (motionDetected && (currentTime - lastVehicleDetectedTime > VEHICLE_DETECTION_INTERVAL)) {
+    Serial.println("Vehicle detected");
+    indicateVehicleDetected();
+    lastVehicleDetectedTime = currentTime;
+  } else if (!motionDetected) {
+    resetVehicleDetectionIndicator();
   }
 }
 
-// void moveToClosedPosition() {
-//   while (encoderPos != encoderTargetPosClosed) {
-//     closeGate();
-//   }
-//   pauseGate();
-// }
+void indicateVehicleDetected() {
+
+  digitalWrite(RED_LED_PIN, HIGH);
+}
+
+void resetVehicleDetectionIndicator() {
+  digitalWrite(RED_LED_PIN, LOW);
+}
 
 void openGate() {
-  //encoderTargetPos = encoderTargetPosOpen;
-  gateMoving = true;
-  // digitalWrite(red, HIGH);
-  // digitalWrite(grn, LOW);
-  digitalWrite(m1, HIGH);
-  digitalWrite(m2, LOW);
-  gateClosing = false;
+  if (!gatePaused) {
+    Serial.println("Opening gate");
+    int dutyCycle = servoMinDuty;
+    ledcWrite(servoChannel, dutyCycle);
+  }
 }
 
 void closeGate() {
-  //encoderTargetPos = encoderTargetPosClosed;
-  gateMoving = true;
-  // digitalWrite(red, LOW);
-  // digitalWrite(grn, HIGH);
-  digitalWrite(m1, LOW);
-  digitalWrite(m2, HIGH);
-  gateClosing = true;
-}
-
-void pauseGate() {
-  digitalWrite(m1, LOW);
-  digitalWrite(m2, LOW);
-  gateClosing = false;
-  gateMoving = false;
-}
-
-void readSerialCommands() {
-  if (Serial.available() > 0) {
-    incoming = Serial.readStringUntil('\n');
-    incoming.trim();
-    if (incoming == "openGate") {
-      openGate();
-    } else if (incoming == "closeGate") {
-      closeGate();
-    } else if (incoming == "pauseGate") {
-      pauseGate();\
-    }
-    else {
-      Serial.println("Incorrect Command");
-    }
+  if (!gatePaused) {
+    Serial.println("Closing gate");
+    // Calculate duty cycle for 180 degrees (modify based on your servo)
+    int dutyCycle = servoMaxDuty;
+    ledcWrite(servoChannel, dutyCycle);
   }
 }
 
-// void controlGate() {
-//   //after handling opening of the gate and closing of the gate during (if (gateMoving))), it closes the gate as that is the default state
-//   if (gateMoving) {
-//     if (encoderPos == encoderTargetPos) {
-//       pauseGate(); 
-//       Serial.println("Target position reached, gate stopped.");
-//     } else {
-//       if (encoderPos < encoderTargetPos) {
-//         openGate();
-//       } else {
-//         closeGate();
-//       }
-//     }
-//   } else {
-//     delay(15000);
-//     closeGate();
-//   }
-// }
+void pauseGate() {
+  // Pausing the gate movement might require stopping the PWM signal
+  // This implementation will just stop updating the duty cycle
+  gatePaused = !gatePaused;
+  if (gatePaused) {
+    Serial.println("Gate paused");
+  } else {
+    Serial.println("Gate unpaused");
+    // Optionally, add logic to resume movement
+  }
+}
 
+void readSerialCommands() {
+  digitalWrite(BLUE_LED_PIN, LOW);
+  digitalWrite(RED_LED_PIN, LOW);
+  digitalWrite(GREEN_LED_PIN, HIGH);
+  if (Serial.available() > 0) {
+    incomingCommand = Serial.readStringUntil('\n');
+    incomingCommand.trim();
 
-
+    if (incomingCommand == "openGate") {
+      openGate();
+    } else if (incomingCommand == "closeGate") {
+      closeGate();
+    } else if (incomingCommand == "pauseGate") {
+      pauseGate();
+    } else {
+      Serial.println("Invalid command");
+    }
+  }
+  digitalWrite(GREEN_LED_PIN, LOW);
+}
