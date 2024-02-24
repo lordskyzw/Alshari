@@ -6,6 +6,7 @@ from utils.dbops import query_db_for_plate, handle_rfid_scan
 from utils.anon import new_arrival
 import serial, sqlite3, cv2
 from datetime import datetime
+from time import sleep
 import redis
 
 
@@ -77,6 +78,7 @@ def mainloop(model, ser: serial.Serial, r: redis.Redis):
                 with open("log.txt", "a") as f:
                     f.write(f"RFID tag scanned at {datetime.now()}\n")
                 handle_rfid_scan(rfid_tag)
+        ser.reset_input_buffer()
                 
         
 ######################################################### HANDLE VEHICLE PRESENT ######################################################       
@@ -120,7 +122,10 @@ def handle_vehicle_present(vehicle_present: bool, model, r: redis.Redis):
                             else:
                                 break
                         if prediction_tries > 3 and prediction.predictions == []:
-                            print("We have tried 3 times and we still have no predictions")
+                            print("We have tried 3 times and we still have no predictions but opening and closing boom gate to show functionality")
+                            ser.write(b'openGate\n')
+                            sleep(5)
+                            ser.write(b'closeGate\n')
                             return
         
                         for pred in prediction.predictions:

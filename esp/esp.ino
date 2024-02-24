@@ -27,9 +27,8 @@ void setup() {
   pinMode(BLUE_LED_PIN, OUTPUT);
   Serial.begin(115200);
   SPI.begin();
-
   gateServo.attach(MOTOR_PIN);  // Attach the servo to the motor pin
-  closeGate();  // Ensure the gate is closed on startup
+  closeGate(); 
 }
 
 void loop() {
@@ -62,7 +61,7 @@ void openGate() {
   if (!gatePaused) {
     Serial.println("Opening gate");
     digitalWrite(GREEN_LED_PIN, HIGH);
-    gateServo.write(90);  // Move servo to open position
+    gateServo.write(120);  // Move servo to open position
     digitalWrite(GREEN_LED_PIN, LOW);
   }
 }
