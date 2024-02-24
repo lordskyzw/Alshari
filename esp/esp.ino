@@ -1,19 +1,11 @@
+#include <ESP32Servo.h>
 #include <MFRC522.h>
 #include <Arduino.h>
-
-// Constants for LEDC
-const int servoChannel = 0;  // Use first channel of 16 available
-const int servoFrequency = 50;  // Standard servo frequency 50Hz
-const int servoResolution = 10;  // 10 bit resolution
-
-const int servoMinDuty = 512;  // Minimum duty cycle for servo (0 degrees)
-const int servoMaxDuty = 2560;  // Maximum duty cycle for servo (180 degrees)
-bool gatePaused = false;
 
 // Constants for pin assignments
 constexpr uint8_t RESET_PIN = 5;
 constexpr uint8_t SS_PIN = 21;
-constexpr int MOTOR_PIN = 12;
+constexpr int MOTOR_PIN = 12;  // Pin connected to the servo signal
 constexpr int MOTION_SENSOR_PIN = 34;
 constexpr int BLUE_LED_PIN = 26;
 constexpr int GREEN_LED_PIN = 27;
@@ -23,26 +15,21 @@ constexpr int RED_LED_PIN = 14;
 constexpr unsigned long VEHICLE_DETECTION_INTERVAL = 5000; // 5 seconds
 
 // Global variables
+Servo gateServo;  // Create a servo object to control the gate
 unsigned long lastVehicleDetectedTime = 0;
-bool isVehiclePresent = false;
+bool gatePaused = false;
 String incomingCommand = "";
 
-// Initialize RFID and LED state
-//MFRC522 rfid(SS_PIN, RESET_PIN);
-
 void setup() {
-  pinMode(MOTOR_PIN, OUTPUT);
   pinMode(MOTION_SENSOR_PIN, INPUT);
   pinMode(RED_LED_PIN, OUTPUT);
   pinMode(GREEN_LED_PIN, OUTPUT);
   pinMode(BLUE_LED_PIN, OUTPUT);
   Serial.begin(115200);
   SPI.begin();
-  //rfid.PCD_Init();
-  ledcSetup(servoChannel, servoFrequency, servoResolution);
-  ledcAttachPin(MOTOR_PIN, servoChannel);
-  
-  closeGate();
+
+  gateServo.attach(MOTOR_PIN);  // Attach the servo to the motor pin
+  closeGate();  // Ensure the gate is closed on startup
 }
 
 void loop() {
@@ -64,7 +51,6 @@ void checkVehiclePresence() {
 }
 
 void indicateVehicleDetected() {
-
   digitalWrite(RED_LED_PIN, HIGH);
 }
 
@@ -75,36 +61,31 @@ void resetVehicleDetectionIndicator() {
 void openGate() {
   if (!gatePaused) {
     Serial.println("Opening gate");
-    int dutyCycle = servoMinDuty;
-    ledcWrite(servoChannel, dutyCycle);
+    digitalWrite(GREEN_LED_PIN, HIGH);
+    gateServo.write(90);  // Move servo to open position
+    digitalWrite(GREEN_LED_PIN, LOW);
   }
 }
 
 void closeGate() {
   if (!gatePaused) {
+    digitalWrite(GREEN_LED_PIN, HIGH);
     Serial.println("Closing gate");
-    // Calculate duty cycle for 180 degrees (modify based on your servo)
-    int dutyCycle = servoMaxDuty;
-    ledcWrite(servoChannel, dutyCycle);
+    gateServo.write(0);  // Move servo to closed position
+    digitalWrite(GREEN_LED_PIN, LOW);
   }
 }
 
 void pauseGate() {
-  // Pausing the gate movement might require stopping the PWM signal
-  // This implementation will just stop updating the duty cycle
-  gatePaused = !gatePaused;
+  gatePaused = !gatePaused;  // Toggle the pause state
   if (gatePaused) {
     Serial.println("Gate paused");
   } else {
     Serial.println("Gate unpaused");
-    // Optionally, add logic to resume movement
   }
 }
 
 void readSerialCommands() {
-  digitalWrite(BLUE_LED_PIN, LOW);
-  digitalWrite(RED_LED_PIN, LOW);
-  digitalWrite(GREEN_LED_PIN, HIGH);
   if (Serial.available() > 0) {
     incomingCommand = Serial.readStringUntil('\n');
     incomingCommand.trim();
@@ -119,5 +100,4 @@ void readSerialCommands() {
       Serial.println("Invalid command");
     }
   }
-  digitalWrite(GREEN_LED_PIN, LOW);
 }

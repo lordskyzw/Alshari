@@ -3,7 +3,7 @@ import cv2
 
 api_key=os.environ.get("OPENAI_API_KEY")
 
-def is_image_clear(image_path, threshold= 1000):
+def is_image_clear(image_path, threshold=0):
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     laplacian_var = cv2.Laplacian(image, cv2.CV_64F).var()
     return laplacian_var > threshold

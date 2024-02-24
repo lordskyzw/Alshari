@@ -165,3 +165,28 @@ Vehicle detected at 2024-01-09 21:05:17.730163
 Vehicle detected at 2024-01-09 21:05:38.573957
 Vehicle detected at 2024-01-09 21:05:43.894178
 Vehicle detected at 2024-01-09 21:05:49.230147
+Vehicle detected at 2024-02-23 12:28:25.692829
+=====================Error in TRYING HANDLE_VEHICLE_PRESENT() at 2024-02-23 12:28:29.321032
+Error: handle_vehicle_present() missing 2 required positional arguments: 'model' and 'r'
+=====================
+Vehicle detected at 2024-02-23 12:28:30.695025
+=====================Error in TRYING HANDLE_VEHICLE_PRESENT() at 2024-02-23 12:28:32.796680
+Error: handle_vehicle_present() missing 2 required positional arguments: 'model' and 'r'
+=====================
+Vehicle detected at 2024-02-23 12:30:29.651771
+=====================Error in TRYING HANDLE_VEHICLE_PRESENT() at 2024-02-23 12:30:32.483458
+Error: handle_vehicle_present() missing 2 required positional arguments: 'model' and 'r'
+=====================
+Vehicle detected at 2024-02-23 12:30:34.500334
+=====================Error in TRYING HANDLE_VEHICLE_PRESENT() at 2024-02-23 12:30:35.209748
+Error: handle_vehicle_present() missing 2 required positional arguments: 'model' and 'r'
+=====================
+Vehicle detected at 2024-02-23 12:31:47.999669
+Vehicle detected at 2024-02-24 11:50:13.168775
+Vehicle detected at 2024-02-24 12:00:23.145260
+=====================Error in TRYING HANDLE_VEHICLE_PRESENT() at 2024-02-24 12:00:50.044522
+Error: maximum recursion depth exceeded while calling a Python object
+=====================
+Vehicle detected at 2024-02-24 12:04:18.493749
+Vehicle detected at 2024-02-24 12:09:46.825272
+Vehicle detected at 2024-02-24 12:13:50.896157
