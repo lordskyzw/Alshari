@@ -45,16 +45,6 @@
             <p class="lead">Quickly manage gate access and monitor entries.</p>
         </div>
 
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Gate Status</h5>
-                        <p class="card-text" id="gateStatus">The gate is currently: <strong>Closed</strong></p>
-                        <button onclick="toggleGate()" class="btn btn-lg btn-block btn-outline-primary">Open/Close Gate</button>
-                    </div>
-                </div>
-            </div>
             
             <div class="col-md-4">
                 <div class="card mb-4 shadow-sm">
@@ -76,10 +66,8 @@
                             <video id="video" class="embed-responsive-item" autoplay></video>
                         </div>
                         <script>
-                            // Get video stream from webcam
                             navigator.mediaDevices.getUserMedia({ video: true })
                                 .then(function(stream) {
-                                    // Set the video source to the webcam stream
                                     var video = document.getElementById('video');
                                     video.srcObject = stream;
                                     video.play();
@@ -95,26 +83,12 @@
             </div>
         </div>
         
-        <!-- Add more sections as needed for security officer operations -->
     </div>
     
-    <!-- Bootstrap JS and additional scripts from base.html -->
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- Script to handle gate toggling -->
-    <script>
-        function toggleGate() {
-            // AJAX call to Flask backend
-            fetch('/toggle-gate', { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                // Update gate status on the webpage
-                document.getElementById('gateStatus').textContent = `The gate is currently: ${data.status}`;
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    </script>
     
 </body>
 </html>

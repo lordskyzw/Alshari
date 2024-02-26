@@ -2,11 +2,23 @@ from flask import Flask, render_template, request, redirect, url_for, Response, 
 from flask_socketio import SocketIO
 from models import db, Entry, Plate  # Importing the models from models.py
 import cv2
+from datetime import datetime
+import time
+
 
 app = Flask(__name__)
+
+state = "Closed" # This is the state of the gate should be extracted from the microcontroller
+# lets implement extracting the state from the microcontroller now
+
+
+
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # Adjust as per your database file
 app.config['SECRET_KEY'] = 'secret'
 db.init_app(app)
+with app.app_context():
+    db.create_all()
 socketio = SocketIO(app)
 
 def gen_frames():  
@@ -36,21 +48,6 @@ def video_feed():
 @app.route('/feed')
 def feed():
     return render_template('feed.html')
-
-gate_is_open = True
-
-def toggle_gate_hardware(gate_is_open):
-    # Hardware toggling logic here
-    gate_is_open = not gate_is_open
-    pass
-
-@app.route('/toggle-gate', methods=['POST'])
-def toggle_gate():
-    toggle_gate_hardware(gate_is_open=gate_is_open)
-    # After toggling, determine the new state, this is placeholder logic
-      # Replace with actual check
-    status = 'Open' if gate_is_open else 'Closed'
-    return jsonify(status=status)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -92,6 +89,7 @@ def handle_new_entry(data):
     db.session.add(new_entry)
     db.session.commit()
     socketio.emit('update_entries', {'plate': plate, 'timestamp': new_entry.timestamp.strftime('%Y-%m-%d %H:%M:%S')}, broadcast=True)
+    
 
 @app.route('/record_entry', methods=['POST'])
 def record_entry():
@@ -103,6 +101,15 @@ def record_entry():
     socketio.emit('update_entries', {'plate': plate, 'timestamp': new_entry.timestamp.strftime('%Y-%m-%d %H:%M:%S')}, broadcast=True)
     return {'status': 'success'}
 
+@app.route('/record_rfid', methods=['POST'])
+def record_rfid():
+    data = request.json
+    employee_name = data.get('employee')
+    # Assuming there's a separate table or field for RFID entries
+    new_rfid_entry = Entry(employee=employee_name, timestamp=datetime.datetime.now())
+    db.session.add(new_rfid_entry)
+    db.session.commit()
+    return jsonify({'status': 'success', 'message': 'RFID entry recorded'})
 
 if __name__ == '__main__':
     with app.app_context():

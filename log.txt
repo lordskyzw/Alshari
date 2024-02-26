@@ -1,0 +1,12 @@
+Vehicle detected at 2024-02-24 12:04:18.493749
+Vehicle detected at 2024-02-24 12:09:46.825272
+Vehicle detected at 2024-02-24 12:13:50.896157
+Vehicle detected at 2024-02-24 12:36:03.452942
+Vehicle detected at 2024-02-24 12:49:06.496462
+Vehicle detected at 2024-02-24 12:59:34.211689
+Vehicle detected at 2024-02-24 13:00:07.143366
+Vehicle detected at 2024-02-24 13:01:58.596536
+Vehicle detected at 2024-02-24 13:07:07.864529
+Vehicle detected at 2024-02-24 13:07:43.557418
+Vehicle detected at 2024-02-24 13:12:50.769032
+Vehicle detected at 2024-02-24 13:14:48.974686

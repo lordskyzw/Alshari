@@ -1,0 +1,33 @@
+for vehicles:
+
+IR sensor is triggered
+we verify that the trigger is a car 
+how? we calibrate the motion sensor sensitivity
+if it is a car, we shut down (ignore) the motion sensor for 5 minutes
+
+
+startup process:
+
+microcontroller
+python script first
+then server
+
+we need an efficient way of detecting whether a vehicle is present or not in the case that the motion sensor keeps going off,
+the caveman method is to process the image taken everytime the sensor reports activity
+however, when a car truly arrives, the sensor may keep going off for a while and this is what we need to combat
+what we can do, before sending the order to open the gate to the microcontroller, we can:
+cache entries with time
+if vehicle is present we compare it to the last vehicle which was present and do a delta time
+we set a delta limit of about umm (3 minutes)
+if the sensor keeps reporting that a car is available we compare delta time to the delta limit
+if delta time > delta limit then we consider that a new arrival and proceed to open the gate, otherwise we pass and assume it has been handled already
+
+
+so our logic begins in app.py 
+specifically after the plate number is extracted
+
+the technicals:
+ok, so we need a way to do this:
+record the time any vehicle comes, along with the number plate of that same vehicle
+one approach is to use the redis db, this is an in memory db which is lost when the computer restarts (i think)
+ok time to learn REDIS (ask ChatGPT)

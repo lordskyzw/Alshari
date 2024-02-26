@@ -4,16 +4,10 @@ import cv2
 api_key=os.environ.get("OPENAI_API_KEY")
 
 
-def is_image_clear(image_path, threshold=100):
-    """
-    Check if the image is clear enough for processing.
-    Returns True if the sharpness is above the threshold.
-    """
+def is_image_clear(image_path, threshold=0):
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     laplacian_var = cv2.Laplacian(image, cv2.CV_64F).var()
     return laplacian_var > threshold
-
-
 
 
 def get_license_plate_region(image_path, prediction):
@@ -23,6 +17,7 @@ def get_license_plate_region(image_path, prediction):
     cv2.imwrite("plate_region.jpg", plate_region)
     return plate_region
 
+    
 def encode_image(image_path):
   with open(image_path, "rb") as image_file:
     return base64.b64encode(image_file.read()).decode('utf-8')
