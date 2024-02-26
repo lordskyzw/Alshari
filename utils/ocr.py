@@ -3,23 +3,20 @@ import cv2
 
 api_key=os.environ.get("OPENAI_API_KEY")
 
+
 def is_image_clear(image_path, threshold=0):
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     laplacian_var = cv2.Laplacian(image, cv2.CV_64F).var()
     return laplacian_var > threshold
 
 
-
 def get_license_plate_region(image_path, prediction):
-    if prediction != None:
-        image = cv2.imread(image_path)
-        x, y, width, height = map(int, (prediction.predictions[0]["x"], prediction.predictions[0]["y"], prediction.predictions[0]["width"], prediction.predictions[0]["height"]))
-        plate_region = image[max(0, y-height):min(image.shape[0], y+height), max(0, x-width):min(image.shape[1], x+width)]
-        cv2.imwrite("plate_region.jpg", plate_region)
-        return plate_region
-    else:
-        print("No prediction")
-        return None
+    image = cv2.imread(image_path)
+    x, y, width, height = map(int, (prediction.predictions[0]["x"], prediction.predictions[0]["y"], prediction.predictions[0]["width"], prediction.predictions[0]["height"]))
+    plate_region = image[max(0, y-height):min(image.shape[0], y+height), max(0, x-width):min(image.shape[1], x+width)]
+    cv2.imwrite("plate_region.jpg", plate_region)
+    return plate_region
+
     
 def encode_image(image_path):
   with open(image_path, "rb") as image_file:
