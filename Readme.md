@@ -1,6 +1,6 @@
-# License Plate Recognition System with Roboflow and Tesseract
+# License Plate Recognition System with Roboflow and OpenAI Vision Models
 
-This project implements a License Plate Recognition (LPR) system using Roboflow for object detection and Tesseract for Optical Character Recognition (OCR). The system is designed to run on a Raspberry Pi and is capable of detecting and extracting license plate numbers from video frames captured by a camera.
+This project implements a License Plate Recognition (LPR) system using Roboflow for object detection and vision capable LLMs for Optical Character Recognition (OCR). The system is designed to run on a Raspberry Pi and is capable of detecting and extracting license plate numbers from video frames captured by a camera.
 
 ## Requirements
 
