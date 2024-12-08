@@ -6,25 +6,21 @@ This project implements a License Plate Recognition (LPR) system using Roboflow 
 
 - Python 3.x
 - OpenCV
-- pytesseract
 - Roboflow SDK
-- Tesseract OCR
 
 ## Setup
 
 1. Install the required Python packages:
 
     ```bash
-    pip install opencv-python pytesseract roboflow
+    pip install opencv-python roboflow openai
     ```
 
-2. Install Tesseract OCR. Follow the installation instructions for your operating system: [Tesseract OCR Installation Guide](https://github.com/tesseract-ocr/tesseract)
+2. Set up a Roboflow account and create a project with a trained YOLOv8 model for license plate detection.
 
-3. Set up a Roboflow account and create a project with a trained YOLOv8 model for license plate detection.
+3. Replace the placeholders in the script with your Roboflow API key, workspace, project, and model version.
 
-4. Replace the placeholders in the script with your Roboflow API key, workspace, project, and model version.
-
-5. Run the script on your Raspberry Pi:
+4. Run the script on your Raspberry Pi:
 
     ```bash
     python license_plate_recognition.py
